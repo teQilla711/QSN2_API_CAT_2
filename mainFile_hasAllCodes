@@ -1,0 +1,73 @@
+app.py
+
+from flask import Flask, request, jsonify
+from flask_api import status
+app = Flask(__name__)
+# In-memory storage for products
+products=[]
+
+@app.route('/products', methods=['POST'])
+def create_product():
+try:
+data=request.get_json()
+
+# input validation
+if 'name' not in data or 'description' not in data or 'price' not in data:
+return jsonify({"error": "Invalid input, missing required fields."}), status.HTTP_400_BAD_REQUEST
+        
+# Creating a new product
+product={'name': data['name'], 'description': data['description'],'price': data['price']}
+
+# Save product to memory
+products.append(product)
+
+return jsonify(product), status.HTTP_201_CREATED
+except Exception as e:
+return jsonify({"error": str(e)}), status.HTTP_400_BAD_REQUEST
+
+
+@app.route('/products', methods=['GET'])
+def get_products():
+return jsonify(products), status.HTTP_200_OK
+
+
+if __name__ == '__main__': app.run(debug=True)
+
+client.py
+
+import requests
+import json
+
+# Define the base URL for the API
+base_url = "http://<<port number. e.g 127.0.0.1:5000>>/products"
+
+# add new product
+def add_product(name, description, price):
+product_data={'name': name,
+'description': description,'price': price}
+
+response=requests.post(base_url, json=product_data)
+if response.status_code==201:
+print("Product created successfully!")
+print("Product details:", response.json())
+else:
+print(f"Failed to create product: {response.status_code}")
+print(response.json())
+
+# getting and displayimg all products
+def get_products():
+response = requests.get(base_url)
+if response.status_code == 200:
+products = response.json()
+print("List of products:")
+for product in products:
+print(product)
+else:
+print("fetchimg products failed.")
+print(response.json())
+
+# adding product
+add_product("Laptop", "High-performance laptop", 1200.50)
+
+# display/get list of products
+get_products()
